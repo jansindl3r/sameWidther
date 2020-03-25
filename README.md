@@ -1,5 +1,9 @@
 # sameWidther
 script that accepts OTF/TTF/UFO files and gets you random words of the same width, nice for specimens.
+```bash
+python "sameWidther.py" font.otf ger 4000 10 -t 10 -c upper
+python "sameWidther.py" font.ufo eng 4023 4 -t 2 -c lower
+```
 
 ## arguments
 #### positional 
