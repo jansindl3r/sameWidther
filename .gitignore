@@ -1,0 +1,6 @@
+.*
+!.gitignore
+*.otf
+*.ttf
+*.ufo
+tools
