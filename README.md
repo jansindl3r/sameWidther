@@ -8,7 +8,8 @@ script that accepts OTF/TTF/UFO files and gets you random words of the same widt
 - width - width of the words
 - wordCount - number of words that you need
 #### optional - keyword arguments
-- threshold - how much in width can the words differ
+- threshold - (default: 10) how much in width can the words differ
+- case - (default: lower) do you want to lower, upper or capitalize the case of the words?
 
 ## word databases
 - [ENG] English https://github.com/dwyl/english-words

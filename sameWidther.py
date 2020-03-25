@@ -22,11 +22,19 @@ class SameWidther:
     def __init__(self, font: Union[TTFont, Font]) -> None:
         self.font = font
         if type(font) == TTFont:
+            self.uni_name = self.TTF_OTF_unicodeMap
+            self.name_uni = {v:k for k,v in self.uni_name.items()}
             self.kerning = self.TTF_OTF_kerning
             self.metrics = self.TTF_OTF_metrics
+            unitsPerEm = self.font['head'].unitsPerEm
         if type(font) == Font:
+            self.uni_name = self.UFO_unicodeMap
+            self.name_uni = {v:k for k,v in self.uni_name.items()}
             self.kerning = self.UFO_kerning
             self.metrics = self.UFO_metrics
+            unitsPerEm = self.font.info.unitsPerEm
+        self.scale = unitsPerEm/1000
+        print(self.scale)
 
     @property
     def UFO_kerning(self) -> dict:
@@ -34,13 +42,17 @@ class SameWidther:
 
     @property
     def UFO_metrics(self) -> dict:
-        return {glyph.name: glyph.width for glyph in self.font}
+        return {glyph.unicode: glyph.width for glyph in self.font}
+
+    @property
+    def UFO_unicodeMap(self) -> dict:
+        return {glyph.unicode: glyph.name for glyph in self.font}
 
     @property
     def TTF_OTF_kerning(self) -> dict:
         flattened = flatten_gpos_kerning(font)
         if flattened:
-            kerning = {(left, right): value for left, right, value in flattened}
+            kerning = {(self.name_uni.get(left), self.name_uni.get(right)): value for left, right, value in flattened}
             return kerning
         else:
             return {}
@@ -48,21 +60,26 @@ class SameWidther:
     @property
     def TTF_OTF_metrics(self) -> dict:
         hmtx = font.get("hmtx")
-        widths = {k: hmtx[k][0] for k in font.getGlyphOrder()}
+        widths = {self.name_uni.get(k): hmtx[k][0] for k in font.getGlyphOrder()}
         return widths
+
+    @property
+    def TTF_OTF_unicodeMap(self) -> dict:
+        return self.font.getBestCmap()
 
     def getWords(
         self, database: list, wordWidth: float, wordCount: int, threshold: int = 10,
     ) -> list:
         sameLongLetters = []
         for word in database:
-            currentWordWidth = sum(map(lambda x: self.metrics[x], word))
+            currentWordWidth = sum(map(lambda x: self.metrics[ord(x)], word))
             pairs = [(word[i], word[i + 1]) for i in range(len(word) - 1)]
             if self.kerning:
-                pairsKerning = sum(map(lambda x: self.kerning.get(x, 0), pairs))
+                pairsKerning = sum(map(lambda x: self.kerning.get(tuple(map(ord, x)), 0), pairs))
                 totalWidth = currentWordWidth + pairsKerning
             else:
                 totalWidth = currentWordWidth
+            totalWidth /= self.scale
             if wordWidth - threshold < totalWidth <= wordWidth + threshold:
                 sameLongLetters.append(word)
                 if len(sameLongLetters) == wordCount:
@@ -87,7 +104,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("wordCount", type=int, help="How many words you need?")
     parser.add_argument(
-        "-t", "--threshold", type=float, default=10, help="(optional) Threshold for the width"
+        "-t", "--threshold", type=float, default=10, help="(optional, default:10) Threshold for the width"
+    )
+
+    parser.add_argument(
+        '-c', '--case', type=str, default="lower", help="(optional, default:lower) change case of the words [upper, lower, capitalize]"
     )
 
     args = parser.parse_args()
@@ -100,8 +121,10 @@ if __name__ == "__main__":
     if suffix in ['.ttf', '.otf']:
         font = TTFont(args.font)
 
-    with open(Path("databases") / f"{args.language}.json") as inputFile:
+    with open(Path("databases") / f"{args.language}.json", encoding='utf-8') as inputFile:
         database = json.load(inputFile)
+        func = getattr(str, args.case)
+        database = list(map(func, database))
         shuffle(database)
         sameWidther = SameWidther(font)
         print("\n".join(sameWidther.getWords(database, args.width, args.wordCount, threshold=args.threshold)))
