@@ -18,4 +18,10 @@ setup(
             "sameWidther = sameWidther:main",
         ]
     },
-    zip_safe=False)
+    zip_safe=False,
+    python_requires='>=3.6',
+    install_requires=[
+        'defcon>=0.6.0',
+        'fonttools>=3.31.0'
+    ]
+    )
