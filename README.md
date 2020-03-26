@@ -23,7 +23,7 @@ sameWidther Desktop/sameWidth/font.ufo ENG 4000 10
 from sameWidther import SameWidther, TTFont, Font
 # font = SameWidther(Font('font.ufo'), 'ENG')
 font = SameWidther(TTFont('font.otf'), 'GER')
-print(font.getWords(3000, 10))
+print(font.getWords(3000, 10, case='upper'))
 ```
 
 ## arguments
