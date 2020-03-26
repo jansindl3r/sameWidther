@@ -4,3 +4,4 @@
 *.ttf
 *.ufo
 tools
+__pycache__
