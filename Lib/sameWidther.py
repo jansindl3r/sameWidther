@@ -69,10 +69,11 @@ class SameWidther:
         return self.font.getBestCmap()
 
     def getWords(
-        self, wordWidth: float, wordCount: int, threshold: int = 10,
+        self, wordWidth: float, wordCount: int, threshold: int = 10, case: str = 'lower'
     ) -> list:
         sameLongLetters = []
         for word in self.database:
+            word = getattr(str, case)(word)
             currentWordWidth = sum(map(lambda x: self.metrics[ord(x)], word))
             pairs = [(word[i], word[i + 1]) for i in range(len(word) - 1)]
             if self.kerning:
@@ -134,13 +135,12 @@ def run(args) -> None:
         font = Font(args.font)
     if suffix in [".ttf", ".otf"]:
         font = TTFont(args.font)
-        func = getattr(str, args.case)
 
     sameWidther = SameWidther(font, 'ENG')
     print(
         "\n".join(
             sameWidther.getWords(
-                args.width, args.wordCount, threshold=args.threshold
+                args.width, args.wordCount, threshold=args.threshold, case=args.case
             )
         )
     )

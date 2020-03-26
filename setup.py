@@ -10,7 +10,7 @@ with open("requirements.txt", "r", encoding="utf-8") as requirements_in:
 
 setup(
     name='sameWidther',
-    version='0.0.3',
+    version='0.0.4',
     description='Gets random words of the same width for given font',
     keywords="font typography graphicdesign specimen width word",
     long_description=long_description,
