@@ -29,7 +29,7 @@ print(font.getWords(3000, 10, case='upper'))
 ## arguments
 #### positional 
 - font - path to OTF/TTF/UFO file that you want to use
-- language - three letter code of language that you want to have the words in, ENG/GER available
+- language - three letter code of language that you want to have the words in, ENG/GER available. Or provide existing path to a database in json format of such structure `["word", "house", "word2", ...]`
 - width - width of the words
 - wordCount - number of words that you need
 #### optional - keyword arguments

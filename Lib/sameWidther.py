@@ -1,3 +1,7 @@
+"""
+get words of same width in given font
+"""
+
 import argparse
 import os
 import json
@@ -9,7 +13,7 @@ from typing import Union
 from fontTools.ttLib import TTFont
 from defcon import Font
 
-__all__ = ['SameWidther', 'TTFont', 'Font']
+__all__ = ["SameWidther", "TTFont", "Font"]
 
 class SameWidther:
     def __init__(self, font: Union[TTFont, Font], language: str) -> None:
@@ -27,12 +31,24 @@ class SameWidther:
             self.metrics = self.UFO_metrics
             unitsPerEm = self.font.info.unitsPerEm
         self.scale = unitsPerEm / 1000
-        with open(
-            Path(__file__).parent/'databases'/f"{language}.json", encoding="utf-8"
-        ) as inputFile:
-            self.database = json.load(inputFile)
+        self.database = self.loadDatabase(language)
         shuffle(self.database)
-    
+
+    def loadDatabase(self, language: str) -> list:
+        """ loads database, either from inbuilt or your own if existing path provided """
+        customDatabase = Path(language)
+
+        if customDatabase.exists() and customDatabase.suffix == ".json":
+            path = customDatabase.absolute()
+        else:
+            path = Path(__file__).parent / "databases" / f"{language.upper()}.json"
+            assert (
+                path.exists()
+            ), f"database {language} doesn't exist as inbuilt database"
+
+        with open(path, encoding="utf-8") as inputFile:
+            data = json.load(inputFile)
+        return data
 
     @property
     def UFO_kerning(self) -> dict:
@@ -69,7 +85,7 @@ class SameWidther:
         return self.font.getBestCmap()
 
     def getWords(
-        self, wordWidth: float, wordCount: int, threshold: int = 10, case: str = 'lower'
+        self, wordWidth: float, wordCount: int, threshold: int = 10, case: str = "lower"
     ) -> list:
         sameLongLetters = []
         for word in self.database:
@@ -103,8 +119,8 @@ class Args:
         )
         parser.add_argument(
             "language",
-            type=lambda x: x.upper(),
-            help="three letter short for language of word database, currently available [ENG, GER]",
+            type=str,
+            help="three letter short for language of word database, currently available [ENG, GER]. Or provide existing path to a existing database. It must be list a list in JSON file. With such structure: [\"word\", \"house\", \"apple\", ...]",
         )
         parser.add_argument(
             "width",
@@ -136,7 +152,7 @@ def run(args) -> None:
     if suffix in [".ttf", ".otf"]:
         font = TTFont(args.font)
 
-    sameWidther = SameWidther(font, 'ENG')
+    sameWidther = SameWidther(font, args.language)
     print(
         "\n".join(
             sameWidther.getWords(
