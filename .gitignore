@@ -9,3 +9,6 @@ __pycache__
 build
 dist
 build.sh
+Lib/databases/*
+!Lib/databases/GER.json
+!Lib/databases/ENG.json

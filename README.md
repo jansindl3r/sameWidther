@@ -43,4 +43,14 @@ print(font.getWords(3000, 10, case='upper'))
 ## other resources
 - customized OTF/TTF kern dump https://gist.github.com/m4rc1e/59017729923ac4930dcd76823c0acb91
 
+
+
+## version history/plans
+### 0.1.0 (plan)
+- manager downloading curated word databases if not implemented by default. If existing in resources.json, any besides already implemented German and English will be downloaded and parsed into sameWidhter unified json format. That is just a list in json without any prettyfing.
+### 0.0.x
+- basic functionality
+- implemented word databases for German, English using 3 letter codes under ISO 639-2/B
+
+
 Happy Specimening
