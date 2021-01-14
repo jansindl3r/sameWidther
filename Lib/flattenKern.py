@@ -6,8 +6,8 @@ from fontTools.ttLib import TTFont
 
 def _kerning_lookup_indexes(ttfont):
     """Return the lookup ids for the kern feature"""
-    for feat in ttfont['GPOS'].table.FeatureList.FeatureRecord:
-        if feat.FeatureTag == 'kern':
+    for feat in ttfont["GPOS"].table.FeatureList.FeatureRecord:
+        if feat.FeatureTag == "kern":
             return feat.Feature.LookupListIndex
     return None
 
@@ -21,7 +21,9 @@ def _flatten_format1_subtable(table):
         first_glyph = first_glyphs[idx]
 
         for record in pairset.PairValueRecord:
-            flattened_table.append((first_glyph, record.SecondGlyph, record.Value1.XAdvance))
+            flattened_table.append(
+                (first_glyph, record.SecondGlyph, record.Value1.XAdvance)
+            )
     return flattened_table
 
 
@@ -51,7 +53,7 @@ def _kern_class(class_definition):
 
     {glyph_name: idx, glyph_name: idx} --> {idx: [glyph_name, glyph_name]}"""
     classes = {}
-    for glyph,idx in class_definition.items():
+    for glyph, idx in class_definition.items():
         if idx not in classes:
             classes[idx] = []
         classes[idx].append(glyph)
@@ -60,7 +62,7 @@ def _kern_class(class_definition):
 
 def flatten_gpos_kerning(ttfont):
 
-    if not 'GPOS' in ttfont:
+    if not "GPOS" in ttfont:
         raise Exception("Font doesn's have GPOS table")
 
     kerning_lookup_indexes = _kerning_lookup_indexes(ttfont)
@@ -70,7 +72,7 @@ def flatten_gpos_kerning(ttfont):
 
     kern_table = []
     for lookup_idx in kerning_lookup_indexes:
-        lookup = ttfont['GPOS'].table.LookupList.Lookup[lookup_idx]
+        lookup = ttfont["GPOS"].table.LookupList.Lookup[lookup_idx]
 
         for sub_table in lookup.SubTable:
             if sub_table.Format == 1:
@@ -80,6 +82,8 @@ def flatten_gpos_kerning(ttfont):
     return kern_table
 
 
-if __name__ == '__main__':
-    font = TTFont('/Users/marc/Documents/googlefonts/manual_font_cleaning/anaheimFont/fonts/ttf/Anaheim-Regular.ttf')
+if __name__ == "__main__":
+    font = TTFont(
+        "/Users/marc/Documents/googlefonts/manual_font_cleaning/anaheimFont/fonts/ttf/Anaheim-Regular.ttf"
+    )
     kerning = flatten_gpos_kerning(font)

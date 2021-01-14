@@ -1,0 +1,44 @@
+{
+    "###": [
+        "link",
+        "which column to keep, true == only one column",
+        "where to split column",
+        "data is sorted"
+    ],
+    "SPA": [
+        "https://raw.githubusercontent.com/lorenbrichter/Words/master/Words/es.txt",
+        true,
+        false,
+        false
+    ],
+    "FRE": [
+        "https://raw.githubusercontent.com/lorenbrichter/Words/master/Words/fr.txt",
+        true,
+        false,
+        false
+    ],
+    "SLO": [
+        "https://raw.githubusercontent.com/danielhusar/slovak-wordlist/master/sk.txt",
+        0,
+        " ",
+        true
+    ],
+    "CZE": [
+        "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/cs/cs_50k.txt",
+        0,
+        " ",
+        true
+    ],
+    "ARA": [
+        "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ar/ar_50k.txt",
+        0,
+        " ",
+        true
+    ],
+    "DAN": [
+        "https://raw.githubusercontent.com/titoBouzout/Dictionaries/master/Danish.dic",
+        0,
+        "/",
+        false
+    ]
+}

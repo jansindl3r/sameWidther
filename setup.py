@@ -26,7 +26,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "sameWidther = sameWidther:main",
+            "sameWidther=sameWidther:main",
         ]
     },
     zip_safe=False,

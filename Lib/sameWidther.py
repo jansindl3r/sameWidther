@@ -2,18 +2,22 @@
 get words of same width in given font
 """
 
+import random
 import argparse
 import os
 import json
+import pathlib
+import defcon
 
-from random import shuffle
-from pathlib import Path
 from flattenKern import flatten_gpos_kerning
+from datasetManager import downloadDataset
+
 from typing import Union
 from fontTools.ttLib import TTFont
-from defcon import Font
+
 
 __all__ = ["SameWidther", "TTFont", "Font"]
+
 
 class SameWidther:
     def __init__(self, font: Union[TTFont, Font], language: str) -> None:
@@ -32,19 +36,24 @@ class SameWidther:
             unitsPerEm = self.font.info.unitsPerEm
         self.scale = unitsPerEm / 1000
         self.database = self.loadDatabase(language)
-        shuffle(self.database)
+        random.shuffle(self.database)
 
     def loadDatabase(self, language: str) -> list:
         """ loads database, either from inbuilt or your own if existing path provided """
-        customDatabase = Path(language)
+        customDatabase = pathlib.Path(language)
+        databaseFolder = pathlib.Path(__file__).parent / "databases"
 
         if customDatabase.exists() and customDatabase.suffix == ".json":
             path = customDatabase.absolute()
         else:
-            path = Path(__file__).parent / "databases" / f"{language.upper()}.json"
-            assert (
-                path.exists()
-            ), f"database {language} doesn't exist as inbuilt database"
+            for i in range(2):
+                path = databaseFolder / f"{language.upper()}.json"
+                if i == 1 or path.exists():
+                    break
+                else:
+                    downloadDataset(language)
+
+        assert path.exists()
 
         with open(path, encoding="utf-8") as inputFile:
             data = json.load(inputFile)
@@ -88,31 +97,37 @@ class SameWidther:
         self, wordWidth: float, wordCount: int, threshold: int = 10, case: str = "lower"
     ) -> list:
         sameLongLetters = []
+        wordsMissingGlyphs = 0
         for word in self.database:
             word = getattr(str, case)(word)
-            currentWordWidth = sum(map(lambda x: self.metrics[ord(x)], word))
+            currentWordWidth = list(map(lambda x: self.metrics.get(ord(x), None), word))
+            if None in currentWordWidth:
+                # glyph not in font
+                wordsMissingGlyphs += 1
+                continue
             pairs = [(word[i], word[i + 1]) for i in range(len(word) - 1)]
+            totalWidth: int = sum(currentWordWidth)
             if self.kerning:
                 pairsKerning = sum(
                     map(lambda x: self.kerning.get(tuple(map(ord, x)), 0), pairs)
                 )
-                totalWidth = currentWordWidth + pairsKerning
-            else:
-                totalWidth = currentWordWidth
-            totalWidth /= self.scale
+                totalWidth += pairsKerning
+            totalWidth /= self.scale # scale widths to 1000 upm
             if wordWidth - threshold < totalWidth <= wordWidth + threshold:
                 sameLongLetters.append(word)
                 if len(sameLongLetters) == wordCount:
                     break
         else:
-            print("not enough matches")
+            print(
+                f"not enough matches. {wordsMissingGlyphs} words contained a missing glyph"
+            )
         return sameLongLetters
 
 
 class Args:
     def __init__(self) -> None:
         parser = argparse.ArgumentParser(
-            description="Get words of the same width, nice for specimens."
+            description="Get words of the same visual width, useful for specimens."
         )
         parser.add_argument(
             "font", type=Path, help="OTF/TTF/UFO file which you want to use"
@@ -120,7 +135,7 @@ class Args:
         parser.add_argument(
             "language",
             type=str,
-            help="three letter short for language of word database, currently available [ENG, GER]. Or provide existing path to a existing database. It must be list a list in JSON file. With such structure: [\"word\", \"house\", \"apple\", ...]",
+            help='three letter short for language of word database, currently available [ENG, GER]. Or provide existing path to a existing database. It must be list a list in JSON file. With such structure: ["word", "house", "apple", ...]',
         )
         parser.add_argument(
             "width",
@@ -148,7 +163,7 @@ class Args:
 def run(args) -> None:
     suffix = args.font.suffix.lower()
     if suffix == ".ufo":
-        font = Font(args.font)
+        font = defcon.Font(args.font)
     if suffix in [".ttf", ".otf"]:
         font = TTFont(args.font)
 
@@ -161,9 +176,11 @@ def run(args) -> None:
         )
     )
 
+
 def main() -> None:
     args = Args()
     run(args.parser)
+
 
 if __name__ == "__main__":
     main()
