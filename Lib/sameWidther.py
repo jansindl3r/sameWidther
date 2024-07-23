@@ -14,6 +14,8 @@ from datasetManager import downloadDataset
 
 from typing import Union
 from fontTools.ttLib import TTFont
+from defcon import Font
+from pathlib import Path
 
 
 __all__ = ["SameWidther", "TTFont", "Font"]
